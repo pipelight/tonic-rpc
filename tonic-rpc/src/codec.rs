@@ -92,7 +92,9 @@ where
 
 #[cfg(feature = "bincode")]
 #[cfg_attr(docsrs, doc(cfg(feature = "bincode")))]
+#[derive(bincode::Decode, bincode::Encode, Serialize, Deserialize)]
 pub struct BincodeSerdeCodec;
+
 #[cfg(feature = "cbor")]
 #[cfg_attr(docsrs, doc(cfg(feature = "cbor")))]
 pub struct CborSerdeCodec;
@@ -102,28 +104,6 @@ pub struct JsonSerdeCodec;
 #[cfg(feature = "messagepack")]
 #[cfg_attr(docsrs, doc(cfg(feature = "messagepack")))]
 pub struct MessagePackSerdeCodec;
-
-#[cfg(feature = "bincode")]
-#[cfg_attr(docsrs, doc(cfg(feature = "bincode")))]
-impl SerdeCodec for BincodeSerdeCodec {
-    fn write<T, W>(item: T, w: W) -> Result<(), Status>
-    where
-        T: Serialize,
-        W: Write,
-    {
-        bincode::serialize_into(w, &item)
-            .map_err(|bincode_err| Status::internal(format!("Error serializing {}", bincode_err)))
-    }
-
-    fn read<T, R>(r: R) -> Result<T, Status>
-    where
-        T: for<'de> Deserialize<'de>,
-        R: Read,
-    {
-        bincode::deserialize_from(r)
-            .map_err(|bincode_err| Status::internal(format!("Error deserializing {}", bincode_err)))
-    }
-}
 
 #[cfg(feature = "cbor")]
 #[cfg_attr(docsrs, doc(cfg(feature = "cbor")))]

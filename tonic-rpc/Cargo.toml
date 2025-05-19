@@ -28,7 +28,7 @@ tonic = { workspace = true }
 tonic-rpc-macro = { version = "0.2.1", path = "../tonic-rpc-macro" }
 
 # optional codecs
-bincode = { version = "2.0.1", optional = true }
+bincode = { version = "2.0.1", features = ["serde"], optional = true }
 rmp-serde = { version = "1.1.1", optional = true }
 serde_json = { version = "1.0.92", optional = true }
 serde_cbor = { version = "0.11.2", optional = true }

@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{
-    parse_macro_input, punctuated::Pair, FnArg, ItemTrait, ReturnType, TraitItem, TraitItemMethod,
+    parse_macro_input, punctuated::Pair, FnArg, ItemTrait, ReturnType, TraitItem, TraitItemFn,
     Type,
 };
 use tonic_build::{Method, Service};
@@ -157,13 +157,13 @@ fn parse_attributes(attributes: Vec<syn::Attribute>) -> (bool, bool, Vec<String>
     let mut doc_comments = Vec::new();
 
     for attr in attributes {
-        if attr.path.is_ident("server_streaming") {
+        if attr.path().is_ident("server_streaming") {
             server_streaming = true;
-        } else if attr.path.is_ident("client_streaming") {
+        } else if attr.path().is_ident("client_streaming") {
             client_streaming = true;
-        } else if attr.path.is_ident("doc") {
+        } else if attr.path().is_ident("doc") {
             if let Some(comment) = attr
-                .tokens
+                .to_token_stream()
                 .to_string()
                 .strip_prefix("= \"")
                 .and_then(|c| c.strip_suffix('\"'))
@@ -178,7 +178,7 @@ fn parse_attributes(attributes: Vec<syn::Attribute>) -> (bool, bool, Vec<String>
     (server_streaming, client_streaming, doc_comments)
 }
 
-fn make_method<T: From<RustDefMethod>>(method: TraitItemMethod, trait_name: &str) -> T {
+fn make_method<T: From<RustDefMethod>>(method: TraitItemFn, trait_name: &str) -> T {
     fn extract_arg<P>(arg: Pair<FnArg, P>) -> Box<Type> {
         match arg {
             Pair::Punctuated(FnArg::Typed(pat), _) | Pair::End(FnArg::Typed(pat)) => pat.ty,
@@ -238,7 +238,7 @@ where
         .items
         .into_iter()
         .filter_map(|item| match item {
-            TraitItem::Method(method) => Some(make_method::<T>(method, &name)),
+            TraitItem::Fn(method) => Some(make_method::<T>(method, &name)),
             _ => None,
         })
         .collect();
